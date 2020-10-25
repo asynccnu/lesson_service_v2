@@ -1,0 +1,10 @@
+.DS_Store
+main
+logs
+*.log
+.idea
+*.xml
+*.iml
+*.out
+.vscode
+*.xlsx
