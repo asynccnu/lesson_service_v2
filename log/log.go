@@ -54,7 +54,7 @@ func init() {
 	// 开启文件及行号
 	development := zap.Development()
 	// 构造日志
-	logger = zap.New(core, caller, development, filed)
+	logger = zap.New(core, caller, development)
 }
 
 func SyncLogger() {
