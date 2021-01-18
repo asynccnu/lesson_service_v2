@@ -27,7 +27,6 @@ func SyncImportClassData(filePath string) {
 	}()
 
 	for item := range channel {
-		//fmt.Println(item.Grade)
 		instances = append(instances,&model.ClassItem{
 				Grade:	item.Grade,
 				ForWhom:	item.ForWhom,
@@ -38,7 +37,7 @@ func SyncImportClassData(filePath string) {
 				PlaceAndTime:	item.PlaceAndTime,
 			})
 	}
-	//GetCourseInfoFromClassFile(file)
+
 	// 导入空闲教室数据至数据库
 	ImportDataToDB()
 

@@ -18,6 +18,7 @@ import (
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 )
+
 //2020.xlsx
 var (
 	cfg = pflag.StringP("config", "c", "", "apiserver config file path.")
@@ -46,7 +47,6 @@ func main() {
 		script.SyncImportClassData(*excelFilePath)
 		return
 	}
-
 
 	// Set gin mode.
 	gin.SetMode(viper.GetString("runmode"))

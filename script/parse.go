@@ -11,17 +11,11 @@ import (
 	"go.uber.org/zap"
 )
 
-//var instances []*CourseItem
+
 // 从选课手册中解析获得课程信息
 func GetCourseInfoFromClassFile(channel chan *model.ClassItem,file *xlsx.File) {
-	//weekdayMap := map[string]int{"一": 1, "二": 2, "三": 3, "四": 4, "五": 5, "六": 6, "日": 7}
+
 	gradeMap := map[string]int{"共课": 0, "017级": 17, "018级": 18, "019级": 19, "020级": 20}
-	// 正则
-	//r, err := regexp.Compile("星期(.*)第(.*)节{(.*)}")
-	// if err != nil {
-	// 	log.Error("Regexp compile failed", zap.String("reason", err.Error()))
-	// 	return
-	// }
 
 	t, err := regexp.Compile("[\u4e00-\u9fa5]+") //如果匹配失败，可能是，半角全角，或者多打的括号
 	if err != nil {
@@ -30,9 +24,6 @@ func GetCourseInfoFromClassFile(channel chan *model.ClassItem,file *xlsx.File) {
 	}
 
 	// 选课手册（0-15列）中第 10，11，12 列为上课时间，第 13，14，15 列为上课地点，第 2 列为课程名字，第 9 列为老师名字
-	// 时间的格式：
-	//    一般格式：星期一第9-10节{1-15周} 或 星期一第9-10节{1-15周(单)}
-	//    特殊格式：星期一第9-10节{4-6周,8周} ...
 	placeAndtime := " "
 	for _, sheet := range file.Sheets {
 		//fmt.Println(sheet.Name)
@@ -41,7 +32,7 @@ func GetCourseInfoFromClassFile(channel chan *model.ClassItem,file *xlsx.File) {
 
 		// 遍历课程数据
 		for _, row := range sheet.Rows {
-			//fmt.Println(sheet.Name)
+
 			// 遍历一行课程数据中的多个时间、地点
 			for j := 10; j <= 14; j += 2 {
 				
@@ -80,15 +71,7 @@ func GetCourseInfoFromClassFile(channel chan *model.ClassItem,file *xlsx.File) {
 				PlaceAndTime:	placeAndtime,
 			}
 			placeAndtime = ""
-			// instances = append(instances,&model.ClassItem{
-			// 	Grade:	gradeMap[gradeflag],
-			// 	ForWhom:	forwhom,
-			// 	Name:	name,
-			// 	LessonNo:	lessonno,
-			// 	Kind:	kind,
-			// 	Teacher:	teacher,
-			// 	PlaceAndTime:	placeAndtime,
-			// })
+
 		}
 	}
 	fmt.Println("Parsing class file OK")
