@@ -1,0 +1,46 @@
+package script
+
+import (
+	"fmt"
+	"github.com/asynccnu/lesson_service_v2/model"
+	"github.com/asynccnu/lesson_service_v2/log"
+	"github.com/tealeg/xlsx"
+
+	"go.uber.org/zap"
+)
+
+// 解析并导入课程数据
+func SyncImportClassData(filePath string) {
+	// 打开 Excel 文件
+	file, err := xlsx.OpenFile(filePath)
+	if err != nil {
+		log.Fatal("Open xlsxFlie failed", zap.String("reason", err.Error()))
+		return
+	}
+
+	channel := make(chan *model.ClassItem, 10)
+
+	// 解析获取获取课程信息
+	go func() {
+		defer close(channel)
+		GetCourseInfoFromClassFile(channel, file)
+	}()
+
+	for item := range channel {
+		//fmt.Println(item.Grade)
+		instances = append(instances,&model.ClassItem{
+				Grade:	item.Grade,
+				ForWhom:	item.ForWhom,
+				Name:	item.Name,
+				LessonNo:	item.LessonNo,
+				Kind:	item.Kind,
+				Teacher:	item.Teacher,
+				PlaceAndTime:	item.PlaceAndTime,
+			})
+	}
+	//GetCourseInfoFromClassFile(file)
+	// 导入空闲教室数据至数据库
+	ImportDataToDB()
+
+	fmt.Println("Import data into DB OK")
+}
