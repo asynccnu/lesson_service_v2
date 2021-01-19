@@ -2,9 +2,9 @@ package model
 
 import (
 	"context"
-	"log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"log"
 )
 
 // 批量新建课程文档数据
@@ -20,10 +20,10 @@ func CreateMultipleClassDocs(instances []*ClassItem) error {
 }
 
 // 获取文档数据
-func GetClassDoc(name, teacher string,grade int) ([]*ClassItem, error) {
+func GetClassDoc(name, teacher string, grade int) ([]*ClassItem, error) {
 	var class []*ClassItem
 
-	cur,err := DB.Self.Database(DBName).Collection(ClassCol).Find(context.TODO(), bson.M{"name": primitive.Regex{Pattern: name}, "teacher": primitive.Regex{Pattern:teacher}, "grade": grade})
+	cur, err := DB.Self.Database(DBName).Collection(ClassCol).Find(context.TODO(), bson.M{"name": primitive.Regex{Pattern: name}, "teacher": primitive.Regex{Pattern: teacher}, "grade": grade})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -35,14 +35,14 @@ func GetClassDoc(name, teacher string,grade int) ([]*ClassItem, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	cur.Close(context.TODO())	
+	cur.Close(context.TODO())
 	return class, err
 }
 
 func GetClassDocNoGrade(name, teacher string) ([]*ClassItem, error) {
 	var class []*ClassItem
 
-	cur,err := DB.Self.Database(DBName).Collection(ClassCol).Find(context.TODO(), bson.M{"name": primitive.Regex{Pattern: name}, "teacher": primitive.Regex{Pattern:teacher}})
+	cur, err := DB.Self.Database(DBName).Collection(ClassCol).Find(context.TODO(), bson.M{"name": primitive.Regex{Pattern: name}, "teacher": primitive.Regex{Pattern: teacher}})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -54,6 +54,6 @@ func GetClassDocNoGrade(name, teacher string) ([]*ClassItem, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	cur.Close(context.TODO())	
+	cur.Close(context.TODO())
 	return class, err
 }

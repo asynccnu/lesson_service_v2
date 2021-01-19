@@ -2,8 +2,8 @@ package script
 
 import (
 	"fmt"
-	"github.com/asynccnu/lesson_service_v2/model"
 	"github.com/asynccnu/lesson_service_v2/log"
+	"github.com/asynccnu/lesson_service_v2/model"
 	"github.com/tealeg/xlsx"
 
 	"go.uber.org/zap"
@@ -27,15 +27,15 @@ func SyncImportClassData(filePath string) {
 	}()
 
 	for item := range channel {
-		instances = append(instances,&model.ClassItem{
-				Grade:	item.Grade,
-				ForWhom:	item.ForWhom,
-				Name:	item.Name,
-				LessonNo:	item.LessonNo,
-				Kind:	item.Kind,
-				Teacher:	item.Teacher,
-				PlaceAndTime:	item.PlaceAndTime,
-			})
+		instances = append(instances, &model.ClassItem{
+			Grade:        item.Grade,
+			ForWhom:      item.ForWhom,
+			Name:         item.Name,
+			LessonNo:     item.LessonNo,
+			Kind:         item.Kind,
+			Teacher:      item.Teacher,
+			PlaceAndTime: item.PlaceAndTime,
+		})
 	}
 
 	// 导入空闲教室数据至数据库

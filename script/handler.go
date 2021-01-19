@@ -9,7 +9,6 @@ import (
 
 var instances []*model.ClassItem
 
-
 // 导入数据至数据库
 func ImportDataToDB() {
 	// 批量插入数据
