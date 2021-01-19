@@ -1,31 +1,36 @@
 package lesson
 
 import (
+	"strconv"
+
 	"github.com/asynccnu/lesson_service_v2/handler"
 	"github.com/asynccnu/lesson_service_v2/model"
 	"github.com/asynccnu/lesson_service_v2/pkg/errno"
+
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
-	"strconv"
 )
 
 func Get(c *gin.Context) {
 	var err error
-	var class []*model.ClassItem
+	var grade int
+	var class []*model.LessonItem
 	name := c.DefaultQuery("name", "")       //课程名字：数字逻辑
 	teacher := c.DefaultQuery("teacher", "") //老师名字
-	gradetemp := c.DefaultQuery("grade", "") //面向对象
+	gradeTemp := c.DefaultQuery("grade", "") //面向对象
 
-	if gradetemp == "" {
-		class, err = model.GetClassDocNoGrade(name, teacher)
-	} else {
-		grade, err := strconv.Atoi(gradetemp)
+	if gradeTemp != "" {
+		grade, err = strconv.Atoi(gradeTemp)
 		if err != nil {
 			handler.SendBadRequest(c, errno.ErrQuery, nil, "The 'grade' is wrong.")
 			return
 		}
-		class, err = model.GetClassDoc(name, teacher, grade)
+	} else {
+		grade = -1
 	}
+
+	class, err = model.GetClassDoc(name, teacher, grade)
+
 	if mongo.ErrNoDocuments == err {
 		handler.SendError(c, errno.ErrGetClasses, nil, err.Error())
 		return

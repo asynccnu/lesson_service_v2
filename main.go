@@ -24,7 +24,7 @@ var (
 	cfg = pflag.StringP("config", "c", "", "apiserver config file path.")
 
 	// 选课手册 Excel 文件路径，若不为空则启动蹭课数据导入脚本
-	excelFilePath = pflag.StringP("path", "p", "", "Excel file path.")
+	excelFilePath = pflag.StringP("path", "p", "2020.xlsx", "Excel file path.")
 )
 
 func main() {
@@ -43,8 +43,8 @@ func main() {
 	defer model.DB.Close()
 
 	if *excelFilePath != "" {
-		// 空闲教室数据导入
-		script.SyncImportClassData(*excelFilePath)
+		// 数据导入
+		script.SyncImportLessonData(*excelFilePath)
 		return
 	}
 

@@ -5,7 +5,7 @@ import (
 
 	"github.com/asynccnu/lesson_service_v2/log"
 
-	//"github.com/spf13/viper"
+	"github.com/spf13/viper"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -15,6 +15,8 @@ type Database struct {
 }
 
 var DB *Database
+
+var DBName = viper.GetString("db.name")
 
 func InitSelfDB() *mongo.Client {
 	// Set client options
@@ -49,8 +51,7 @@ func (db *Database) Init() {
 		Self: GetSelfDB(),
 	}
 
-	//DBName = viper.GetString("db.name")
-	DBName = "class"
+	DBName = viper.GetString("db.name")
 }
 
 func (db *Database) Close() {

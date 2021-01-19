@@ -1,12 +1,10 @@
 package model
 
-var DBName = "class"
-
 const (
-	ClassCol = "class"
+	LessonCol = "lesson"
 )
 
-type ClassItem struct {
+type LessonItem struct {
 	Grade        int    `bson:"grade" json:"grade"`               // 授课年级，0 表示面向全体学生
 	Name         string `bson:"name" json:"name"`                 // 课程名
 	Teacher      string `bson:"teacher" json:"teacher"`           // 教师名字

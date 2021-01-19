@@ -3,7 +3,8 @@ package script
 import (
 	"fmt"
 	"regexp"
-	// "strings"
+	"strings"
+
 	"github.com/asynccnu/lesson_service_v2/log"
 	"github.com/asynccnu/lesson_service_v2/model"
 
@@ -12,7 +13,7 @@ import (
 )
 
 // 从选课手册中解析获得课程信息
-func GetCourseInfoFromClassFile(channel chan *model.ClassItem, file *xlsx.File) {
+func GetLessonInfoFromClassFile(channel chan *model.LessonItem, file *xlsx.File) {
 
 	gradeMap := map[string]int{"共课": 0, "017级": 17, "018级": 18, "019级": 19, "020级": 20}
 
@@ -23,15 +24,16 @@ func GetCourseInfoFromClassFile(channel chan *model.ClassItem, file *xlsx.File) 
 	}
 
 	// 选课手册（0-15列）中第 10，11，12 列为上课时间，第 13，14，15 列为上课地点，第 2 列为课程名字，第 9 列为老师名字
-	placeAndtime := " "
+	var build strings.Builder
 	for _, sheet := range file.Sheets {
-		//fmt.Println(sheet.Name)
 		grade := sheet.Name
-		gradeflag := grade[len(grade)-6:]
+		gradeFlag := grade[len(grade)-6:]
 
 		// 遍历课程数据
-		for _, row := range sheet.Rows {
-
+		for rowIndex, row := range sheet.Rows {
+			if rowIndex == 0 {
+				continue
+			}
 			// 遍历一行课程数据中的多个时间、地点
 			for j := 10; j <= 14; j += 2 {
 
@@ -41,35 +43,35 @@ func GetCourseInfoFromClassFile(channel chan *model.ClassItem, file *xlsx.File) 
 					continue
 				}
 
-				if date != "上课时间1" && date != "上课时间2" && date != "上课时间3" {
-					placeAndtime += date + place + " , "
-				}
+				build.WriteString(date)
+				build.WriteString(place)
+				build.WriteString(",")
 			}
 
-			forwhom := "all"
-			if gradeMap[gradeflag] != 0 {
-				forwhom = row.Cells[16].String()
+			placeAndTime := build.String()
+			forWhom := "all"
+			if gradeMap[gradeFlag] != 0 {
+				forWhom = row.Cells[16].String()
 			}
-			//fmt.Println(sheet.Name)
 			name := row.Cells[2].String()
-			teachertmp := row.Cells[8].String()
-			lessonno := row.Cells[1].String()
+			teacherTmp := row.Cells[8].String()
+			lessonNo := row.Cells[1].String()
 
 			// 正则匹配
-			teachertmp2 := t.FindStringSubmatch(teachertmp)
-			teacher := ExtractTeacher(teachertmp2)
-			kind := ExtractLessonNo(lessonno)
+			teacherTmp2 := t.FindStringSubmatch(teacherTmp)
+			teacher := ExtractTeacher(teacherTmp2)
+			kind := ExtractLessonNo(lessonNo)
 
-			channel <- &model.ClassItem{
-				Grade:        gradeMap[gradeflag],
-				ForWhom:      forwhom,
+			channel <- &model.LessonItem{
+				Grade:        gradeMap[gradeFlag],
+				ForWhom:      forWhom,
 				Name:         name,
-				LessonNo:     lessonno,
+				LessonNo:     lessonNo,
 				Kind:         kind,
 				Teacher:      teacher,
-				PlaceAndTime: placeAndtime,
+				PlaceAndTime: placeAndTime,
 			}
-			placeAndtime = ""
+			build.Reset()
 
 		}
 	}
@@ -82,19 +84,21 @@ func ExtractLessonNo(lessonno string) string {
 	kind1Map := map[string]string{"0": "通识必修课", "1": "专业必修课", "2": "专业选修课", "3": "通识选修课", "4": "专业课", "5": "通识核心课"}
 	kind2Map := map[string]string{"0": "公共必修课及专业课", "1": "数学与自然科学类", "2": "哲学与社会科学类", "3": "人文与艺术类", "4": "教育学与心理学类"}
 
-	c1 := lessonno[3:4]
-	c2 := lessonno[4:5]
+	temp1 := lessonno[3:4]
+	temp2 := lessonno[4:5]
 
-	kind := kind1Map[c1] + "," + kind2Map[c2]
+	kind := kind1Map[temp1] + "," + kind2Map[temp2]
 	return kind
 }
 
-func ExtractTeacher(teachertmp2 []string) string {
-	length := len(teachertmp2)
-	var teacher string
+func ExtractTeacher(teacherTmp2 []string) string {
+	length := len(teacherTmp2)
+	var build strings.Builder
 
 	for i := 0; i < length; i++ {
-		teacher = teachertmp2[i] + ","
+		build.WriteString(teacherTmp2[i])
+		build.WriteString(",")
 	}
+	teacher := build.String()
 	return teacher
 }

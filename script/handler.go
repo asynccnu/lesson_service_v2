@@ -7,12 +7,12 @@ import (
 	"go.uber.org/zap"
 )
 
-var instances []*model.ClassItem
+var instances []*model.LessonItem
 
 // 导入数据至数据库
 func ImportDataToDB() {
 	// 批量插入数据
-	if err := model.CreateMultipleClassDocs(instances); err != nil {
+	if err := model.CreateMultipleLessonDocs(instances); err != nil {
 		log.Error("Inserting multiple data failed", zap.String("reason", err.Error()))
 	}
 }
