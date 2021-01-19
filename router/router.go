@@ -26,7 +26,7 @@ func Load(g *gin.Engine, mw ...gin.HandlerFunc) *gin.Engine {
 	// lesson handlers
 	lessonRouter := g.Group("/api/lesson/v2")
 	{
-		lessonRouter.GET("/get", lesson.Get)
+		lessonRouter.GET("", lesson.Get)
 	}
 
 	// The health check handlers
