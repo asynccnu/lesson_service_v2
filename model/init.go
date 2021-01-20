@@ -20,7 +20,8 @@ var DBName = viper.GetString("db.name")
 
 func InitSelfDB() *mongo.Client {
 	// Set client options
-	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017/")
+	path := viper.GetString("db.path")
+	clientOptions := options.Client().ApplyURI(path)
 
 	// Connect to MongoDB
 	client, err := mongo.Connect(context.TODO(), clientOptions)
