@@ -11,6 +11,7 @@ import (
 	"github.com/asynccnu/lesson_service_v2/model"
 	"github.com/asynccnu/lesson_service_v2/router"
 	"github.com/asynccnu/lesson_service_v2/router/middleware"
+	"github.com/asynccnu/lesson_service_v2/script"
 
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/pflag"
@@ -18,8 +19,12 @@ import (
 	"go.uber.org/zap"
 )
 
+//2020.xlsx
 var (
 	cfg = pflag.StringP("config", "c", "", "apiserver config file path.")
+
+	// 选课手册 Excel 文件路径，若不为空则启动蹭课数据导入脚本
+	excelFilePath = pflag.StringP("path", "p", "", "Excel file path.")
 )
 
 func main() {
@@ -36,6 +41,12 @@ func main() {
 	// init db
 	model.DB.Init()
 	defer model.DB.Close()
+
+	if *excelFilePath != "" {
+		// 数据导入
+		script.SyncImportLessonData(*excelFilePath)
+		return
+	}
 
 	// Set gin mode.
 	gin.SetMode(viper.GetString("runmode"))

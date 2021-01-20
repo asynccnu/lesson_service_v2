@@ -1,62 +1,49 @@
 package model
 
 import (
-	"fmt"
-
-	"go.uber.org/zap"
+	"context"
 
 	"github.com/asynccnu/lesson_service_v2/log"
-	"github.com/spf13/viper"
 
-	// MySQL driver.
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/spf13/viper"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Database struct {
-	Self *gorm.DB
+	Self *mongo.Client
 }
 
 var DB *Database
 
-func openDB(username, password, addr, name string) *gorm.DB {
-	config := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=%t&loc=%s",
-		username,
-		password,
-		addr,
-		name,
-		true,
-		//"Asia/Shanghai"),
-		"Local")
+var DBName = viper.GetString("db.name")
 
-	db, err := gorm.Open("mysql", config)
+func InitSelfDB() *mongo.Client {
+	// Set client options
+	path := viper.GetString("db.path")
+	clientOptions := options.Client().ApplyURI(path)
+
+	// Connect to MongoDB
+	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
-		log.Error("Open database failed",
-			zap.String("reason", err.Error()),
-			zap.String("detail", fmt.Sprintf("Database connection failed. Database name: %s", name)))
+		// log.Errorf(err, "Database connection failed.")
+		log.Error("Database connection failed.")
+		return client
 	}
 
-	// set for db connection
-	setupDB(db)
+	// Check the connection
+	err = client.Ping(context.TODO(), nil)
+	if err != nil {
+		log.Error("Database connection failed: " + err.Error())
+		panic(err)
+	}
 
-	return db
+	log.Info("Connected to MongoDB!")
+
+	return client
 }
 
-func setupDB(db *gorm.DB) {
-	db.LogMode(viper.GetBool("gormlog"))
-	//db.DB().SetMaxOpenConns(20000) // 用于设置最大打开的连接数，默认值为0表示不限制.设置最大的连接数，可以避免并发太高导致连接mysql出现too many connections的错误。
-	db.DB().SetMaxIdleConns(0) // 用于设置闲置的连接数.设置闲置的连接数则当开启的一个连接使用完成后可以放在池里等候下一次使用。
-}
-
-// used for cli
-func InitSelfDB() *gorm.DB {
-	return openDB(viper.GetString("db.username"),
-		viper.GetString("db.password"),
-		viper.GetString("db.addr"),
-		viper.GetString("db.name"))
-}
-
-func GetSelfDB() *gorm.DB {
+func GetSelfDB() *mongo.Client {
 	return InitSelfDB()
 }
 
@@ -64,8 +51,10 @@ func (db *Database) Init() {
 	DB = &Database{
 		Self: GetSelfDB(),
 	}
+
+	DBName = viper.GetString("db.name")
 }
 
 func (db *Database) Close() {
-	DB.Self.Close()
+	DB.Self.Disconnect(context.TODO())
 }
