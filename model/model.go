@@ -17,8 +17,8 @@ type LessonItem struct {
 }
 
 type Item struct {
-	Place string `bson:"place" json:"place"`
-	Time  string `bson:"time" json:"time"`
+	Place string `bson:"place" json:"place"` //上课地点
+	Time  string `bson:"time" json:"time"`   //上课时间
 }
 
 /*
