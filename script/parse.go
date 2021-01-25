@@ -27,6 +27,7 @@ func GetLessonInfoFromClassFile(channel chan *model.LessonItem, file *xlsx.File)
 	var build strings.Builder
 	for _, sheet := range file.Sheets {
 		grade := sheet.Name
+		//fmt.Println(grade,len(grade))
 		gradeFlag := grade[len(grade)-6:]
 
 		// 遍历课程数据
