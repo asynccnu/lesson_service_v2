@@ -43,7 +43,6 @@ func GetLessonInfoFromClassFile(channel chan *model.LessonItem, file *xlsx.File)
 			var itemTmp model.Item
 			// 遍历一行课程数据中的多个时间、地点
 			for j := 10; j <= 14; j += 2 {
-
 				itemTmp.Time = row.Cells[j].String()
 				itemTmp.Place = row.Cells[j+1].String()
 				if itemTmp.Time == "" || itemTmp.Place == "" {
