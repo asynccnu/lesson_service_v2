@@ -23,7 +23,7 @@ func CreateMultipleLessonDocs(instances []*LessonItem) error {
 
 // 获取文档数据
 func GetClassDoc(name, teacher string, grade int) ([]*LessonItem, error) {
-	var lesson []*LessonItem
+	var lesson = make([]*LessonItem, 0)
 
 	// 匹配模式：课程名，教师，年级
 	// 若年级不为 -1，则匹配年级

@@ -1,8 +1,10 @@
 package script
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/asynccnu/lesson_service_v2/log"
@@ -15,9 +17,8 @@ import (
 // 从选课手册中解析获得课程信息
 func GetLessonInfoFromClassFile(channel chan *model.LessonItem, file *xlsx.File) {
 
-	gradeMap := map[string]int{"共课": 0, "017级": 17, "018级": 18, "019级": 19, "020级": 20}
-
-	t, err := regexp.Compile("[\u4e00-\u9fa5]+") //如果匹配失败，可能是，半角全角，或者多打的括号
+	// 匹配教师，如果匹配失败，可能是，半角全角，或者多打的括号
+	t, err := regexp.Compile("[\u4e00-\u9fa5]+")
 	if err != nil {
 		log.Error("Regexp compile failed", zap.String("reason", err.Error()))
 		return
@@ -26,8 +27,12 @@ func GetLessonInfoFromClassFile(channel chan *model.LessonItem, file *xlsx.File)
 	// 选课手册（0-15列）中第 10，11，12 列为上课时间，第 13，14，15 列为上课地点，第 2 列为课程名字，第 9 列为老师名字
 	var build strings.Builder
 	for _, sheet := range file.Sheets {
-		grade := sheet.Name
-		gradeFlag := grade[len(grade)-6:]
+		// 解析年级：公共课 => 0，2020级 => 2020
+		grade, err := ExtractGrade(sheet.Name)
+		if err != nil {
+			log.Error("extract grade error", zap.String("reason", err.Error()))
+			return
+		}
 
 		// 遍历课程数据
 		for rowIndex, row := range sheet.Rows {
@@ -50,9 +55,10 @@ func GetLessonInfoFromClassFile(channel chan *model.LessonItem, file *xlsx.File)
 
 			placeAndTime := build.String()
 			forWhom := "all"
-			if gradeMap[gradeFlag] != 0 {
+			if grade != 0 {
 				forWhom = row.Cells[16].String()
 			}
+
 			name := row.Cells[2].String()
 			teacherTmp := row.Cells[8].String()
 			lessonNo := row.Cells[1].String()
@@ -63,7 +69,7 @@ func GetLessonInfoFromClassFile(channel chan *model.LessonItem, file *xlsx.File)
 			kind := ExtractLessonNo(lessonNo)
 
 			channel <- &model.LessonItem{
-				Grade:        gradeMap[gradeFlag],
+				Grade:        grade,
 				ForWhom:      forWhom,
 				Name:         name,
 				LessonNo:     lessonNo,
@@ -101,4 +107,26 @@ func ExtractTeacher(teacherTmp2 []string) string {
 	}
 	teacher := build.String()
 	return teacher
+}
+
+// 解析年级
+func ExtractGrade(gradeStr string) (int, error) {
+	if strings.Contains(gradeStr, "公共课") {
+		return 0, nil
+	}
+
+	// 正则
+	r := regexp.MustCompile("([0-9]{4}).*")
+
+	matchGroups := r.FindStringSubmatch(gradeStr)
+	if len(matchGroups) < 1 {
+		return 0, errors.New("mathch failed")
+	}
+
+	grade, err := strconv.Atoi(matchGroups[1])
+	if err != nil {
+		return 0, errors.New(fmt.Sprintf("Atoi %s failed", matchGroups[1]))
+	}
+
+	return grade, nil
 }
