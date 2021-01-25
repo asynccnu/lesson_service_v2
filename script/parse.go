@@ -25,35 +25,33 @@ func GetLessonInfoFromClassFile(channel chan *model.LessonItem, file *xlsx.File)
 	}
 
 	// 选课手册（0-15列）中第 10，11，12 列为上课时间，第 13，14，15 列为上课地点，第 2 列为课程名字，第 9 列为老师名字
-	var build strings.Builder
+
 	for _, sheet := range file.Sheets {
+
 		// 解析年级：公共课 => 0，2020级 => 2020
 		grade, err := ExtractGrade(sheet.Name)
 		if err != nil {
 			log.Error("extract grade error", zap.String("reason", err.Error()))
 			return
 		}
-
 		// 遍历课程数据
 		for rowIndex, row := range sheet.Rows {
 			if rowIndex == 0 {
 				continue
 			}
+			var placeAndTime []model.Item
+			var itemTmp model.Item
 			// 遍历一行课程数据中的多个时间、地点
 			for j := 10; j <= 14; j += 2 {
-
-				date := row.Cells[j].String()
-				place := row.Cells[j+1].String()
-				if date == "" || place == "" {
+				itemTmp.Time = row.Cells[j].String()
+				itemTmp.Place = row.Cells[j+1].String()
+				if itemTmp.Time == "" || itemTmp.Place == "" {
 					continue
 				}
 
-				build.WriteString(date)
-				build.WriteString(place)
-				build.WriteString(",")
+				placeAndTime = append(placeAndTime, itemTmp)
 			}
 
-			placeAndTime := build.String()
 			forWhom := "all"
 			if grade != 0 {
 				forWhom = row.Cells[16].String()
@@ -77,8 +75,6 @@ func GetLessonInfoFromClassFile(channel chan *model.LessonItem, file *xlsx.File)
 				Teacher:      teacher,
 				PlaceAndTime: placeAndTime,
 			}
-			build.Reset()
-
 		}
 	}
 	fmt.Println("Parsing class file OK")
