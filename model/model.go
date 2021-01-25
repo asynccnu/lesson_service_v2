@@ -4,6 +4,8 @@ const (
 	LessonCol = "lesson"
 )
 
+var DBName = "lesson"
+
 type LessonItem struct {
 	Grade        int    `bson:"grade" json:"grade"`               // 授课年级，0 表示面向全体学生
 	Name         string `bson:"name" json:"name"`                 // 课程名

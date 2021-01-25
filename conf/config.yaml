@@ -15,7 +15,4 @@ log:
   log_backup_count: 7
 db: # DB 配置 部署时环境变量覆盖
   name: lesson
-  addr: 0.0.0.0:3306
-  path: "mongodb://localhost:27017/"
-  username: root
-  password: root
+  url: mongodb://127.0.0.1:27017/?compressors=disabled&gssapiServiceName=mongodb

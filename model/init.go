@@ -16,26 +16,21 @@ type Database struct {
 
 var DB *Database
 
-var DBName = viper.GetString("db.name")
-
 func InitSelfDB() *mongo.Client {
 	// Set client options
-	path := viper.GetString("db.path")
-	clientOptions := options.Client().ApplyURI(path)
+	url := viper.GetString("db.url")
+	clientOptions := options.Client().ApplyURI(url)
 
 	// Connect to MongoDB
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
-		// log.Errorf(err, "Database connection failed.")
-		log.Error("Database connection failed.")
-		return client
+		log.Fatal("Database connection failed." + err.Error())
 	}
 
 	// Check the connection
 	err = client.Ping(context.TODO(), nil)
 	if err != nil {
-		log.Error("Database connection failed: " + err.Error())
-		panic(err)
+		log.Fatal("Database connection failed: " + err.Error())
 	}
 
 	log.Info("Connected to MongoDB!")

@@ -42,8 +42,8 @@ func main() {
 	model.DB.Init()
 	defer model.DB.Close()
 
+	// 选课课程数据导入
 	if *excelFilePath != "" {
-		// 数据导入
 		script.SyncImportLessonData(*excelFilePath)
 		return
 	}
