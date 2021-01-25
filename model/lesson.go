@@ -2,11 +2,11 @@ package model
 
 import (
 	"context"
-	"log"
+
+	"github.com/asynccnu/lesson_service_v2/log"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 // 批量新建课程文档数据
@@ -23,26 +23,33 @@ func CreateMultipleLessonDocs(instances []*LessonItem) error {
 
 // 获取文档数据
 func GetClassDoc(name, teacher string, grade int) ([]*LessonItem, error) {
-	var lesson []*LessonItem
-	var cur *mongo.Cursor
-	var err error
+	var lesson = make([]*LessonItem, 0)
 
-	if grade == -1 {
-		cur, err = DB.Self.Database(DBName).Collection(LessonCol).Find(context.TODO(), bson.M{"name": primitive.Regex{Pattern: name}, "teacher": primitive.Regex{Pattern: teacher}})
-	} else {
-		cur, err = DB.Self.Database(DBName).Collection(LessonCol).Find(context.TODO(), bson.M{"name": primitive.Regex{Pattern: name}, "teacher": primitive.Regex{Pattern: teacher}, "grade": grade})
+	// 匹配模式：课程名，教师，年级
+	// 若年级不为 -1，则匹配年级
+	pattern := bson.M{"name": primitive.Regex{Pattern: name}, "teacher": primitive.Regex{Pattern: teacher}}
+	if grade != -1 {
+		pattern = bson.M{"name": primitive.Regex{Pattern: name}, "teacher": primitive.Regex{Pattern: teacher}, "grade": grade}
 	}
+
+	cur, err := DB.Self.Database(DBName).Collection(LessonCol).Find(context.TODO(), pattern)
 	if err != nil {
-		log.Fatal(err)
+		log.Error("Find docs error." + err.Error())
+		return lesson, err
 	}
+
+	defer cur.Close(context.TODO())
+
 	if err := cur.Err(); err != nil {
-		log.Fatal(err)
+		log.Error("Cursor error." + err.Error())
+		return lesson, err
 	}
 
-	err = cur.All(context.Background(), &lesson)
+	err = cur.All(context.TODO(), &lesson)
 	if err != nil {
-		log.Fatal(err)
+		log.Error("Docs decode to slice error." + err.Error())
+		return lesson, err
 	}
-	cur.Close(context.TODO())
+
 	return lesson, err
 }

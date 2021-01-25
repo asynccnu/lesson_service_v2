@@ -13,27 +13,25 @@ import (
 
 func Get(c *gin.Context) {
 	var err error
-	var grade int
-	var class []*model.LessonItem
-	name := c.DefaultQuery("name", "")       //课程名字：数字逻辑
-	teacher := c.DefaultQuery("teacher", "") //老师名字
-	gradeTemp := c.DefaultQuery("grade", "") //面向对象
 
-	if gradeTemp != "" {
-		grade, err = strconv.Atoi(gradeTemp)
-		if err != nil {
-			handler.SendBadRequest(c, errno.ErrQuery, nil, "The 'grade' is wrong.")
-			return
-		}
-	} else {
-		grade = -1
+	name := c.DefaultQuery("name", "") // 课程名，必填
+	if name == "" {
+		handler.SendBadRequest(c, errno.ErrQuery, nil, "The 'name' is required.")
+		return
 	}
 
-	class, err = model.GetClassDoc(name, teacher, grade)
+	teacher := c.DefaultQuery("teacher", "")                  // 教师姓名
+	grade, err := strconv.Atoi(c.DefaultQuery("grade", "-1")) // 年级
+	if err != nil {
+		handler.SendBadRequest(c, errno.ErrQuery, nil, "The 'grade' is wrong.")
+		return
+	}
 
-	if mongo.ErrNoDocuments == err {
+	lessones, err := model.GetClassDoc(name, teacher, grade)
+	if err != nil && err != mongo.ErrNoDocuments {
 		handler.SendError(c, errno.ErrGetClasses, nil, err.Error())
 		return
 	}
-	handler.SendResponse(c, nil, class)
+
+	handler.SendResponse(c, nil, lessones)
 }
