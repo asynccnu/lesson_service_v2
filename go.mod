@@ -17,3 +17,8 @@ require (
 	go.uber.org/zap v1.21.0
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 )
+
+replace (
+	github.com/spf13/viper v1.11.0 => github.com/spf13/viper v1.7.1
+	go.mongodb.org/mongo-driver v1.9.0 => go.mongodb.org/mongo-driver v1.4.1
+)
