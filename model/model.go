@@ -4,7 +4,7 @@ const (
 	LessonCol = "lesson"
 )
 
-var DBName = "lesson"
+var DBName = "ccnubox"
 
 type LessonItem struct {
 	Grade        int    `bson:"grade" json:"grade"`                   // 授课年级，0 表示面向全体学生
